@@ -27,6 +27,10 @@ order by salarioo DESC
 
 3 Listar o nome do funcionario com maior salario dentro de cada departamento (pode ser usado o IN)
 
+elect e.nome, e.salario, e.dep_id 
+from empregados e 
+where salario in (select max(salario) from empregados s where e.dep_id = s.dep_id  group by dep_id);
+
 
 --  dep_id | nome  | salario 
 -- --------+-------+---------
@@ -37,6 +41,12 @@ order by salarioo DESC
 
 4 Listar os nomes departamentos que tem menos de 3 empregados;
 
+select d.dep_id, d.nome 
+from departamentos d
+where (select count(dep_id) from empregados c where d.dep_id=c.dep_id) < 3;
+
+
+
 --  nome 
 -- ------
 --  TI
@@ -45,7 +55,10 @@ order by salarioo DESC
 
 6 Listar os departamentos  com o número de colaboradores
 
-    
+select dep_id, count(dep_id) as count 
+from empregados
+group by dep_id;
+
 --    nome    | count 
 -- -----------+-------
 --  Marketing |     1
@@ -56,6 +69,12 @@ order by salarioo DESC
 
 7 Listar os empregados que não possuem chefes no mesmo departamento 
 
+select e.nome, e.dep_id 
+from empregados e
+where dep_id != (select dep_id from empregados s where s.emp_id = e.supervisor_id);
+
+
+
 --  nome | dep_id 
 -- ------+--------
 --  Joao |      3
@@ -64,12 +83,26 @@ order by salarioo DESC
 
 8 Listar os departamentos com o total de salários pagos 
 
-
+select dep_id, sum(salario) as sum 
+from empregados
+where dep_id = dep_id group by dep_id;
 
 9  Listar os colaboradores com salario maior que a média do seu departamento;
 
+select e.nome, e.dep_id 
+from empregados e
+where salario > (select avg(salario) from empregados d where e.dep_id = d.dep_id);
+
+
+
+
+
 
 10 Compare o salario de cada colaborados com média do seu setor. Dica: usar slide windows functions (https://www.postgresqltutorial.com/postgresql-window-function/)
+
+
+SELECT emp_id, nome, dep_id, salario, AVG(salario) OVER (PARTITION BY dep_id) FROM empregados;
+
 
 -- emp_id |   nome    | dep_id | salario |          avg           
 -- --------+-----------+--------+---------+------------------------
@@ -84,6 +117,12 @@ order by salarioo DESC
 
 
 11 - Encontre os empregados com salario maior ou igual a média do seu departamento. Deve ser reportado o salario do empregado e a média do departamento (dica: usar window function com subconsulta)
+
+select e.salario, e.nome
+from empregados as e
+where e.salario >= (select avg(e2.salario) as ss
+                  from empregados e2
+                  where e2.dep_id = e.dep_id);
 
 --   nome   | salario | dep_id |       avg_salary       
 -- ---------+---------+--------+------------------------
